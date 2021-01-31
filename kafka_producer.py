@@ -9,6 +9,8 @@ def callback(err, msg):
 
 
 p = Producer({'bootstrap.servers': 'localhost:9092'})
+# With linger.ms=0 (default),
+# kafka producer sends messages immediately, even if there is additional unused space in the buffer.
 
 for i in range(200000):
     # You need to call poll() at regular intervals to serve the producer's delivery report callbacks
@@ -18,6 +20,10 @@ for i in range(200000):
     # When timeout is not 0, the process is blocked until any callback is returned or timeout is reached
 
     # Return value of poll() is # of batches sent which is caught by p.poll (Maybe not number of messages...)
+    # In case of no key is given,
+    # Note that in kafka producer with later version, messages are assigned with SAME partition
+    # if a batch of records is not full and has not yet been sent to the broker.
+    # https://docs.confluent.io/platform/current/clients/producer.html#concepts
     polling_result = p.poll(0)
     if polling_result:
         print(f'Polling result: {polling_result}')
