@@ -27,7 +27,7 @@ for i in range(200000):
     polling_result = p.poll(0)
     if polling_result:
         print(f'Polling result: {polling_result}')
-    p.produce('sample-topic', f'hello world {i}', callback=callback)
+    p.produce('sample-topic', f'hello world {i}', on_delivery=callback)
 
 # flush(): Waiting for all messages are sent
 # Should be called for application teardown
