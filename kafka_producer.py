@@ -12,7 +12,7 @@ p = Producer({'bootstrap.servers': 'localhost:9092'})
 # With linger.ms=0 (default),
 # kafka producer sends messages immediately, even if there is additional unused space in the buffer.
 
-for i in range(200000):
+for i in range(20000):
     # You need to call poll() at regular intervals to serve the producer's delivery report callbacks
     # Without poll(), all callback is queued until flush method is executed.
     # In case of large # of messages, if the queue is full, 'BufferError: Local: Queue full' can occur.
