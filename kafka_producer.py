@@ -8,20 +8,29 @@ def callback(err, msg):
         print(f'Message delivered to {msg.topic()} [{msg.partition()}]')
 
 
-p = Producer({'bootstrap.servers': 'localhost:9092'})
-# With linger.ms=0 (default),
-# kafka producer sends messages immediately, even if there is additional unused space in the buffer.
+p = Producer({
+    'bootstrap.servers': 'localhost:9092',
+    # With linger.ms=0 (default),
+    # Kafka producer sends messages immediately, even if there is additional unused space in the buffer.
+    'linger.ms': '20',
+    # Python producer has different value of default batch size. 
+    # Default value in confluent doc is 16384(16KB). 
+    # But with batch.size given expliciply with 16384, batch size from callback log is different
+    'batch.size': '32768', # 32KB
+    'compression.type': 'snappy'
+})
 
-for i in range(20000):
-    # You need to call poll() at regular intervals to serve the producer's delivery report callbacks
-    # Without poll(), all callback is queued until flush method is executed.
-    # In case of large # of messages, if the queue is full, 'BufferError: Local: Queue full' can occur.
+
+for i in range(100000):
+    # You need to call poll() at regular intervals to serve the producer's delivery report callbacks.
+    # Without poll(), all callback is queued (internal Queue) until flush method is executed.
+    # In case of large # of messages, the queue can be full, 'BufferError: Local: Queue full' can occur.
     # poll(0) is a cheap call if nothing needs to be done. Therefore it is typically put in the producer loop
-    # When timeout is not 0, the process is blocked until any callback is returned or timeout is reached
+    # When timeout is not 0 (e.g. poll(10)), the process is blocked until any callback is returned or timeout is reached
 
     # Return value of poll() is # of batches sent which is caught by p.poll (Maybe not number of messages...)
     # In case of no key is given,
-    # Note that in kafka producer with later version, messages are assigned with SAME partition
+    # note that in kafka producer with later version, messages are assigned with SAME partition,
     # if a batch of records is not full and has not yet been sent to the broker.
     # https://docs.confluent.io/platform/current/clients/producer.html#concepts
     polling_result = p.poll(0)
